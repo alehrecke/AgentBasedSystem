@@ -176,8 +176,7 @@ public partial class CustomAgent : GH_ScriptInstance
         {
             return new List<object>()
             {
-                (object) this.Position,
-                (object) this.Velocity
+                (object) this.Position
             };
         }
 
