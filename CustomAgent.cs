@@ -108,7 +108,7 @@ public partial class CustomAgent : GH_ScriptInstance
     // Notes
     // Make sure that behaviors are not interdependent, so we can turn them on/off as needed for debugging and optimization
 
-    //  Agent
+    //  Agent (NKK)
     public class BuilderAgent : AgentBase
     {
         public enum GoalState
