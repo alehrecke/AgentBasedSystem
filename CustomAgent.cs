@@ -133,6 +133,7 @@ public partial class CustomAgent : GH_ScriptInstance
 
         private const double EnergyExpenditure = 0.1;
 
+        // super usefull comment
         public BuilderAgent(Point3d _position, int _reach, int _perceptionRange, List<BehaviorBase> behaviors)
         {
             // get faceID from position
