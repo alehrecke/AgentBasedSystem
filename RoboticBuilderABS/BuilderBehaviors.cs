@@ -34,27 +34,28 @@ namespace ABS.RoboticBuilderABS
         public override void Execute(AgentBase agent)
         {
             BuilderAgent agent1 = (BuilderAgent)agent;
-            List<BuilderAgent> neighbors = (agent1.AgentSystem as BuilderAgentSystem).FindNeighbors(agent1, this.Distance);
-            Vector3d zero = Vector3d.Zero;
-            if (neighbors.Count == 0)
-                return;
-            foreach (BuilderAgent builderAgent in neighbors)
-            {
-                Vector3d vector3d1 = agent1.Position - builderAgent.Position;
-                double length = vector3d1.Length;
-                if (vector3d1.IsZero)
-                    vector3d1 = Vector3d.XAxis;
-                if (length < this.Distance)
-                {
-                    vector3d1.Unitize();
-                    Vector3d vector3d2 = this.Weight * vector3d1 * Math.Pow((this.Distance - length) / this.Distance, this.Power) * this.Distance;
-                    if (this.AffectSelf)
-                        zero += vector3d2;
-                    else
-                        builderAgent.AddForce(-vector3d2);
-                }
-            }
-            agent1.AddForce(zero * this.Weight);
+            agent1.Position += new Vector3d(0, 0, 1);
+            //List<BuilderAgent> neighbors = (agent1.AgentSystem as BuilderAgentSystem).FindNeighbors(agent1, this.Distance);
+            //Vector3d zero = Vector3d.Zero;
+            //if (neighbors.Count == 0)
+            //    return;
+            //foreach (BuilderAgent builderAgent in neighbors)
+            //{
+            //    Vector3d vector3d1 = agent1.Position - builderAgent.Position;
+            //    double length = vector3d1.Length;
+            //    if (vector3d1.IsZero)
+            //        vector3d1 = Vector3d.XAxis;
+            //    if (length < this.Distance)
+            //    {
+            //        vector3d1.Unitize();
+            //        Vector3d vector3d2 = this.Weight * vector3d1 * Math.Pow((this.Distance - length) / this.Distance, this.Power) * this.Distance;
+            //        if (this.AffectSelf)
+            //            zero += vector3d2;
+            //        else
+            //            builderAgent.AddForce(-vector3d2);
+            //    }
+            //}
+            //agent1.AddForce(zero * this.Weight);
         }
     }
 
