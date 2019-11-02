@@ -42,11 +42,12 @@ namespace ABS.RoboticBuilderABS
 
         private const double EnergyExpenditure = 0.1;
 
-        public BuilderAgent(Point3d _position, int _reach, int _perceptionRange, List<BehaviorBase> behaviors)
+        public BuilderAgent(int _positionIndex, int _reach, int _perceptionRange, List<BehaviorBase> behaviors)
         {
             // get faceID from position
             // AgentSystem property gets filled by agent system, leave alone for now
-            Position = _position;
+            FaceId = _positionIndex;
+            Position = new Point3d(0,0,0);
             startPosition = Position;
             Reach = _reach;
             PerceptionRange = _perceptionRange;
