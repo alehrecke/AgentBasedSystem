@@ -24,6 +24,7 @@ namespace ABS
             pManager.AddIntegerParameter("iAgentCount", "", "", GH_ParamAccess.item, 1 );
             pManager.AddIntegerParameter("iReach", "", "", GH_ParamAccess.item, 5);
             pManager.AddGenericParameter("iBehaviors", "", "", GH_ParamAccess.list);
+            pManager[2].Optional = true;
         }
             
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)

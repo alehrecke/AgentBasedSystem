@@ -22,15 +22,16 @@ namespace ABS.RoboticBuilderABS
     public class BuilderMeshEnvironment : EnvironmentBase
     {
         public Mesh Mesh;
-        public List<int> ResourceLocations;
-        public List<int> ConstructionLocations;
-        public List<int> ChargingLocations;
-        public List<int> ConstructedFaces;
+        public List<int> ResourceLocations = new List<int>();
+        public List<int> ConstructionLocations = new List<int>();
+        public List<int> ChargingLocations = new List<int>();
+        public List<int> ConstructedFaces = new List<int>();
 
 
         public BuilderMeshEnvironment(Mesh mesh)
         {
             this.Mesh = mesh;
+
             DetermineBaseFaces(5);
         }
 
@@ -51,7 +52,7 @@ namespace ABS.RoboticBuilderABS
         {
             List<object> meshEdges = GetMeshEdges();
             List<object> constructedMeshFaces = GetConstructedFaces(meshEdges);
-            List<object> returnList = new List<object>() {(object) this.Mesh};
+            List<object> returnList = new List<object>();
             returnList.AddRange(meshEdges);
             returnList.AddRange(constructedMeshFaces);
             return returnList;
@@ -68,6 +69,7 @@ namespace ABS.RoboticBuilderABS
                 meshVertices.Add(Mesh.Vertices[mF[1]]);
                 meshVertices.Add(Mesh.Vertices[mF[2]]);
                 if (mF.IsQuad) meshVertices.Add(Mesh.Vertices[mF[3]]);
+                meshVertices.Add(Mesh.Vertices[mF[0]]);
                 Polyline meshOutline = new Polyline(meshVertices);
                 meshEdges.Add((object)meshOutline);
             }
