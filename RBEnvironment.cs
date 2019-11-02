@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
+using ABS.RoboticBuilderABS;
 using Grasshopper.Kernel;
 using Rhino.Geometry;
 
@@ -17,15 +17,23 @@ namespace ABS
         }
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
+            pManager.AddMeshParameter("Mesh", "Mesh", "Mesh environment for agents", GH_ParamAccess.item);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
+            pManager.AddGenericParameter("Environment", "Environment", "Mesh environment object", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
+            Mesh inputMesh = new Mesh();   
+            if (!DA.GetData("Mesh", ref inputMesh)) return;
+            BuilderMeshEnvironment bme = new BuilderMeshEnvironment(inputMesh);
+
+            DA.SetData("Environment", bme);
         }
+
 
         protected override System.Drawing.Bitmap Icon
         {

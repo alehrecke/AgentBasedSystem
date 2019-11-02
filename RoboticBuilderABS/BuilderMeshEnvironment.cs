@@ -22,15 +22,24 @@ namespace ABS.RoboticBuilderABS
     public class BuilderMeshEnvironment : EnvironmentBase
     {
         public Mesh Mesh;
-        public List<Vector3d> VectorField;
-        public List<Point3d> ResourceLocations;
-        public List<Point3d> ConstructionLocations;
-        public List<Point3d> ChargingLocations;
+        public List<int> ResourceLocations;
+        public List<int> ConstructionLocations;
+        public List<int> ChargingLocations;
+        public List<int> ConstructedFaces;
 
 
         public BuilderMeshEnvironment(Mesh mesh)
         {
             this.Mesh = mesh;
+            DetermineBaseFaces(5);
+        }
+
+        private void DetermineBaseFaces(int baseFaceCount)
+        {
+            for (int i = 0; i < baseFaceCount; i++)
+            {
+                ConstructedFaces.Add(i);
+            }
         }
 
         public void SetMesh(Mesh mesh)
@@ -40,7 +49,42 @@ namespace ABS.RoboticBuilderABS
 
         public override List<object> GetDisplayGeometry()
         {
-            return new List<object>() { (object)this.Mesh };
+            List<object> meshEdges = GetMeshEdges();
+            List<object> constructedMeshFaces = GetConstructedFaces(meshEdges);
+            List<object> returnList = new List<object>() {(object) this.Mesh};
+            returnList.AddRange(meshEdges);
+            returnList.AddRange(constructedMeshFaces);
+            return returnList;
+
+        }
+
+        private List<object> GetMeshEdges()
+        {
+            List<object> meshEdges = new List<object>();
+            foreach(MeshFace mF in Mesh.Faces)
+            {
+                List<Point3d> meshVertices = new List<Point3d>();        
+                meshVertices.Add(Mesh.Vertices[mF[0]]);
+                meshVertices.Add(Mesh.Vertices[mF[1]]);
+                meshVertices.Add(Mesh.Vertices[mF[2]]);
+                if (mF.IsQuad) meshVertices.Add(Mesh.Vertices[mF[3]]);
+                Polyline meshOutline = new Polyline(meshVertices);
+                meshEdges.Add((object)meshOutline);
+            }
+
+            return meshEdges;
+        }
+
+        private List<object> GetConstructedFaces(List<object> meshEdges)
+        {
+            List<object> constructedFaces = new List<object>();
+            foreach (int x in ConstructedFaces)
+            {
+                Mesh meshSrf = Mesh.CreateFromClosedPolyline((Polyline) meshEdges[x]);
+                constructedFaces.Add(meshSrf);
+            }
+
+            return constructedFaces;
         }
 
         public Point3d ClosestPoint(Point3d position)
