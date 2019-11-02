@@ -22,10 +22,11 @@ namespace ABS.RoboticBuilderABS
     public class BuilderMeshEnvironment : EnvironmentBase
     {
         public Mesh Mesh;
-        public List<Vector3d> VectorField;
-        public List<Point3d> ResourceLocations;
-        public List<Point3d> ConstructionLocations;
-        public List<Point3d> ChargingLocations;
+        // public List<Vector3d> VectorField;
+        public List<int> ResourceLocations;
+        public List<int> ConstructionLocations;
+        public List<int> ChargingLocations;
+        public List<int> ConstructedFaces;
 
 
         public BuilderMeshEnvironment(Mesh mesh)
