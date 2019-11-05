@@ -22,18 +22,24 @@ namespace ABS.RoboticBuilderABS
     public class BuilderMeshEnvironment : EnvironmentBase
     {
         public Mesh Mesh;
+<<<<<<< HEAD
         public Brep BrepForAStar;
+=======
+
+>>>>>>> origin/master
         public List<int> ResourceLocations = new List<int>();
         public List<int> ConstructionLocations = new List<int>();
         public List<int> ChargingLocations = new List<int>();
         public List<int> ConstructedFaces = new List<int>();
 
 
-        public BuilderMeshEnvironment(Mesh mesh, Brep brep)
+
+
+        public BuilderMeshEnvironment(Mesh mesh)
         {
             this.Mesh = mesh;
-            this.BrepForAStar = brep;
-            DetermineBaseFaces(5);
+
+            DetermineBaseFaces(10);
         }
 
         private void DetermineBaseFaces(int baseFaceCount)
@@ -127,7 +133,7 @@ namespace ABS.RoboticBuilderABS
                 curveList.Add((Curve)nakedEdge.ToNurbsCurve());
             return curveList;
         }
+        
 
-       
     }
 }
