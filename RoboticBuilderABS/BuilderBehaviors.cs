@@ -14,6 +14,7 @@ using Grasshopper.Kernel.Data;
 using Grasshopper.Kernel.Types;
 using ICD.AbmFramework.Core.Agent;
 using ICD.AbmFramework.Core.Behavior;
+using Rhino.Geometry.Collections;
 
 
 namespace ABS.RoboticBuilderABS
@@ -82,16 +83,136 @@ namespace ABS.RoboticBuilderABS
             BuilderAgent builderAgent = (BuilderAgent)agent;
             if (builderAgent.Goal == BuilderAgent.GoalState.NOT_SET)
             {
-                BuilderAgentSystem builderAgentSystem = builderAgent.AgentSystem as BuilderAgentSystem;
-                BuilderMeshEnvironment builderMeshEnvironment = builderAgentSystem.BuilderEnvironment;
                 //Look for goal and set goal using builderMeshEnvironment List of Resources and choosing the closest one
                 // Generate trajectory
-                GenerateTrajectory();
+
+                GenerateTrajectory(builderAgent, new Point3d(0,0,0), new Point3d(0,0,0));
             }
         }
-        private void GenerateTrajectory()
-        {
 
+        class Node
+        {
+            public Point3d Location;
+            public double HCost;
+            public double GCost;
+            public Node Parent;
+            public int FaceId;
+            public bool isValidForLocomotion;
+
+            public Node(Point3d location, int faceId)
+            {
+                Location = location;
+                FaceId = faceId;
+                isValidForLocomotion = true;
+            }
+            public double FCost => GCost + HCost;
+        }
+
+        private Node NodeFromWorldPoint(Point3d worldPoint, int faceId)
+        {
+            // Actually implement a way to find closest mesh face
+            Node tempNode = new Node(worldPoint, faceId);
+            return tempNode;
+        }
+
+        private List<Node> GetNeighbors(Node node)
+        {
+            List<Node> neighbors = new List<Node>();
+            
+            return neighbors;
+        }
+
+        private double GetDistance(Node nodeA, Node nodeB)
+        {
+            return 0;
+        }
+
+        private void RetracePath(Node startNode, Node endNode)
+        {
+            List<Node> path = new List<Node>();
+            Node currentNode = endNode;
+            while (currentNode != startNode)
+            {
+                path.Add(currentNode);
+                currentNode = currentNode.Parent;
+            }
+
+            path.Reverse();
+        }
+
+        private void GenerateTrajectory(BuilderAgent agent, Point3d startPosition, Point3d targetPosition)
+        {
+           
+
+            BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
+            BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
+            Mesh refMesh = env.Mesh;
+
+
+            // A* Algorithm
+
+           
+            // Temporary!
+            List<Point3d> meshVertices = new List<Point3d>();
+            MeshFace mF = refMesh.Faces[10];
+            meshVertices.Add(refMesh.Vertices[mF[0]]);
+            meshVertices.Add(refMesh.Vertices[mF[1]]);
+            meshVertices.Add(refMesh.Vertices[mF[2]]);
+            if (mF.IsQuad) meshVertices.Add(refMesh.Vertices[mF[3]]);
+            Point3d centroid = new Point3d();
+            foreach (Point3d pt in meshVertices)
+            {
+                centroid += pt;
+            }
+            
+            Node targetNode = NodeFromWorldPoint(centroid/meshVertices.Count, 10);
+            Node startNode = NodeFromWorldPoint(agent.Position, agent.FaceId);
+
+            List<Node> OpenSet = new List<Node>();
+            HashSet<Node> ClosedSet = new HashSet<Node>();
+
+            OpenSet.Add(startNode);
+
+            while (OpenSet.Count > 0)
+            {
+                Node currentNode = OpenSet[0];
+                for (int i = 1; i < OpenSet.Count; i++)
+                {
+                    if (OpenSet[i].FCost < currentNode.FCost || OpenSet[i].FCost == currentNode.FCost && OpenSet[i].HCost < currentNode.HCost)
+                    {
+                        currentNode = OpenSet[i];
+                    }
+                }
+
+                OpenSet.Remove(currentNode);
+                ClosedSet.Add(currentNode);
+
+                if (currentNode == targetNode)
+                {
+                    return;
+                }
+
+                foreach (Node neighborNode in GetNeighbors(currentNode))
+                {
+                    if (!neighborNode.isValidForLocomotion || ClosedSet.Contains(neighborNode))
+                    {
+                        continue;
+                    }
+
+                    double newMovementCostToNeighbor = currentNode.GCost + GetDistance(currentNode, neighborNode);
+                    if (newMovementCostToNeighbor < neighborNode.GCost || !OpenSet.Contains(neighborNode))
+                    {
+                        neighborNode.GCost = newMovementCostToNeighbor;
+                        neighborNode.HCost = GetDistance(neighborNode, targetNode);
+                        neighborNode.Parent = currentNode;
+
+                        if (!OpenSet.Contains(neighborNode))
+                        {
+                            OpenSet.Add(neighborNode);
+                        }
+                    }
+                }
+            }
         }
     }
 

@@ -22,16 +22,17 @@ namespace ABS.RoboticBuilderABS
     public class BuilderMeshEnvironment : EnvironmentBase
     {
         public Mesh Mesh;
+        public Brep BrepForAStar;
         public List<int> ResourceLocations = new List<int>();
         public List<int> ConstructionLocations = new List<int>();
         public List<int> ChargingLocations = new List<int>();
         public List<int> ConstructedFaces = new List<int>();
 
 
-        public BuilderMeshEnvironment(Mesh mesh)
+        public BuilderMeshEnvironment(Mesh mesh, Brep brep)
         {
             this.Mesh = mesh;
-
+            this.BrepForAStar = brep;
             DetermineBaseFaces(5);
         }
 
@@ -56,7 +57,6 @@ namespace ABS.RoboticBuilderABS
             returnList.AddRange(meshEdges);
             returnList.AddRange(constructedMeshFaces);
             return returnList;
-
         }
 
         private List<object> GetMeshEdges()
