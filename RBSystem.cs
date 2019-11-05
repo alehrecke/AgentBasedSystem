@@ -44,13 +44,13 @@ namespace ABS
             DA.GetDataList<BuilderAgent>("RB-Agents", agentList);
             DA.GetData<double>("Timestep", ref timestep);
 
+
             if (localAgents.Count != agentList.Count || firstRun)
             {
                 localAgents = agentList;
-                agentSystem = new BuilderAgentSystem(localAgents);
+                agentSystem = new BuilderAgentSystem(localAgents, builderMeshEnv);
                 firstRun = false;
             }
-            agentSystem.BuilderEnvironment = builderMeshEnv;
             agentSystem.TimeStep = timestep;
 
             DA.SetData("RB-Sys", (object)this.agentSystem);

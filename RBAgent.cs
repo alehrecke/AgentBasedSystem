@@ -38,6 +38,7 @@ namespace ABS
             int _agentCount = 1;
             int _reach = 1;
             List<BehaviorBase> _behaviors = new List<BehaviorBase>();
+            List<BuilderAgent> Agents = new List<BuilderAgent>();
             
 
 
@@ -45,9 +46,13 @@ namespace ABS
             if (!DA.GetDataList<BehaviorBase>("iBehaviors", _behaviors)) return;
             if (!DA.GetData("iReach", ref _reach)) return;
 
-            BuilderAgent agent = new BuilderAgent( 1, _reach, 3*_reach, _behaviors);
+            for ( int i = 0; i < _agentCount; i++)
+            {
+                BuilderAgent agent = new BuilderAgent(_reach, 3 * _reach, _behaviors);
+                Agents.Add(agent);
+            }
 
-            DA.SetData("oAgents", agent);
+            DA.SetDataList("oAgents", Agents);
         }
 
         protected override System.Drawing.Bitmap Icon

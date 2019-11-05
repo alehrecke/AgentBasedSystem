@@ -34,7 +34,19 @@ namespace ABS.RoboticBuilderABS
         public override void Execute(AgentBase agent)
         {
             BuilderAgent agent1 = (BuilderAgent)agent;
-            agent1.Position += new Vector3d(0, 0, 1);
+            
+            Random random = new Random();
+            double x = random.Next(-1, 1);
+            double y = random.Next(-1, 1);
+            double z = random.Next(-1, 1);
+
+            Vector3d finalVector = new Vector3d(x, y, z);
+
+            // change in position is applied here, Please calculate correct finalVector
+            agent1.AddForce(finalVector);
+
+            //agent1.Position += new Vector3d( x, y, z);
+
             //List<BuilderAgent> neighbors = (agent1.AgentSystem as BuilderAgentSystem).FindNeighbors(agent1, this.Distance);
             //Vector3d zero = Vector3d.Zero;
             //if (neighbors.Count == 0)

@@ -34,7 +34,7 @@ namespace ABS.RoboticBuilderABS
         {
             this.Mesh = mesh;
 
-            DetermineBaseFaces(5);
+            DetermineBaseFaces(10);
         }
 
         private void DetermineBaseFaces(int baseFaceCount)
@@ -129,7 +129,7 @@ namespace ABS.RoboticBuilderABS
                 curveList.Add((Curve)nakedEdge.ToNurbsCurve());
             return curveList;
         }
+        
 
-       
     }
 }

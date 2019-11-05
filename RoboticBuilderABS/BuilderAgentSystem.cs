@@ -30,24 +30,26 @@ namespace ABS.RoboticBuilderABS
         protected BuilderAgentSystem()
         {
             this.Agents = new List<AgentBase>();
+            foreach (BuilderAgent agent in this.Agents)
+                agent.FindStartingPosition();
         }
 
-        public override void Reset()
+        public BuilderAgentSystem(List<BuilderAgent> agents, BuilderMeshEnvironment env)
         {
-            base.Reset();
-            this.TotalDisplacement = double.MaxValue;
-        }
-
-        public BuilderAgentSystem(List<BuilderAgent> agents)
-        {
+            this.BuilderEnvironment = env;
             this.Agents = new List<AgentBase>();
             foreach (AgentBase agent in agents)
             {
                 this.Agents.Add(agent);
                 agent.AgentSystem = (AgentSystemBase)this;
+                ((BuilderAgent)agent).FindStartingPosition();
             }
         }
-
+        //public override void Reset()
+        //{
+        //    base.Reset();
+        //    this.TotalDisplacement = double.MaxValue;
+        //}
         public override void Execute()
         {
             this.TotalDisplacement = 0.0;
@@ -62,14 +64,6 @@ namespace ABS.RoboticBuilderABS
                 objectList.AddRange((IEnumerable<object>)agent.GetDisplayGeometries());
             return objectList;
         }
-
-        //public list<gh_point> getagentpositionsasghpoints()
-        //{
-        //    list<gh_point> ghpointlist = new list<gh_point>();
-        //    foreach (builderagent agent in this.agents)
-        //        //ghpointlist.add(new gh_point(agent.position));
-        //        return ghpointlist;
-        //}
 
         public List<GH_Vector> GetAgentVelocitiesAsGhVectors()
         {
