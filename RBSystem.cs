@@ -25,7 +25,6 @@ namespace ABS
         {
             pManager.AddGenericParameter("RB-Agents", "RB-Agents", "RB-Agents", GH_ParamAccess.list);
             pManager.AddGenericParameter("RB-Env", "RB-Env", "RB-Env", GH_ParamAccess.item);
-            pManager.AddNumberParameter("Timestep", "T-Step", "T-Step", GH_ParamAccess.item, 0.02);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -36,22 +35,33 @@ namespace ABS
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             BuilderMeshEnvironment builderMeshEnv = (BuilderMeshEnvironment)null;
-            List<BuilderAgent> agentList = new List<BuilderAgent>();
-            double timestep = double.NaN;
-
+            List<BuilderAgent> tempAgents = new List<BuilderAgent>();
 
             DA.GetData<BuilderMeshEnvironment>("RB-Env", ref builderMeshEnv);
-            DA.GetDataList<BuilderAgent>("RB-Agents", agentList);
-            DA.GetData<double>("Timestep", ref timestep);
+            DA.GetDataList<BuilderAgent>("RB-Agents", tempAgents);
 
-
-            if (localAgents.Count != agentList.Count || firstRun)
+            bool reload = false;
+            if (localAgents.Count != tempAgents.Count)
             {
-                localAgents = agentList;
-                agentSystem = new BuilderAgentSystem(localAgents, builderMeshEnv);
-                firstRun = false;
+                reload = true;
             }
-            agentSystem.TimeStep = timestep;
+            else
+            {
+                for (int index = 0; index < localAgents.Count; ++index)
+                {
+                    if (this.localAgents[index] != tempAgents[index])
+                    {
+                        reload = true;
+                        break;
+                    }
+                }
+            }
+            localAgents = tempAgents;
+            if (reload)
+            {
+                agentSystem = new BuilderAgentSystem(localAgents, builderMeshEnv);
+            }
+            agentSystem.BuilderEnvironment = builderMeshEnv;
 
             DA.SetData("RB-Sys", (object)this.agentSystem);
         }

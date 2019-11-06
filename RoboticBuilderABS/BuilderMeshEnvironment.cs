@@ -22,12 +22,10 @@ namespace ABS.RoboticBuilderABS
     public class BuilderMeshEnvironment : EnvironmentBase
     {
         public Mesh Mesh;
-<<<<<<< HEAD
-        public Brep BrepForAStar;
-=======
+        public Surface BrepForAStar;
 
->>>>>>> origin/master
         public List<int> ResourceLocations = new List<int>();
+        public List<int> ClaimedResources = new List<int>();
         public List<int> ConstructionLocations = new List<int>();
         public List<int> ChargingLocations = new List<int>();
         public List<int> ConstructedFaces = new List<int>();
@@ -35,11 +33,34 @@ namespace ABS.RoboticBuilderABS
 
 
 
-        public BuilderMeshEnvironment(Mesh mesh)
+        public BuilderMeshEnvironment(Mesh mesh, Surface brep)
         {
             this.Mesh = mesh;
+            this.BrepForAStar = brep;
+            DetermineBaseFaces(80);
+            DetermineResourceLocations();
+        }
 
-            DetermineBaseFaces(10);
+        public Point3d GetNextResource()
+        {
+            if (ResourceLocations.Count <= 0)
+            {
+                return new Point3d();
+            }
+            // pop from resource locations
+            int acquiredResourceId = ResourceLocations[0];
+            // add to claimed resources
+            ClaimedResources.Add(acquiredResourceId);
+            ResourceLocations.Remove(0);
+            // return position of resource
+            return Mesh.Faces.GetFaceCenter(acquiredResourceId);
+        }
+
+        public void DetermineResourceLocations()
+        {
+            Random rnd = new Random();
+            int randomLocation = rnd.Next(0, ConstructedFaces.Count);
+            ResourceLocations.Add(randomLocation);
         }
 
         private void DetermineBaseFaces(int baseFaceCount)
@@ -59,9 +80,11 @@ namespace ABS.RoboticBuilderABS
         {
             List<object> meshEdges = GetMeshEdges();
             List<object> constructedMeshFaces = GetConstructedFaces(meshEdges);
+            List<object> resourceLocations = GetResourceLocations();
             List<object> returnList = new List<object>();
             returnList.AddRange(meshEdges);
             returnList.AddRange(constructedMeshFaces);
+            returnList.AddRange(resourceLocations);
             return returnList;
         }
 
@@ -83,6 +106,17 @@ namespace ABS.RoboticBuilderABS
             return meshEdges;
         }
 
+        private List<object> GetResourceLocations()
+        {
+            List<object> resourceFaces = new List<object>();
+            foreach (int x in ResourceLocations)
+            {
+                resourceFaces.Add(Mesh.Faces.GetFaceCenter(x));
+            }
+
+            return resourceFaces;
+        }
+
         private List<object> GetConstructedFaces(List<object> meshEdges)
         {
             List<object> constructedFaces = new List<object>();
@@ -94,6 +128,8 @@ namespace ABS.RoboticBuilderABS
 
             return constructedFaces;
         }
+
+       
 
         public Point3d ClosestPoint(Point3d position)
         {

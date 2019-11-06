@@ -90,16 +90,37 @@ namespace ABS.RoboticBuilderABS
         public LookForGoalBehavior()
         {
         }
+
         public override void Execute(AgentBase agent)
         {
             BuilderAgent builderAgent = (BuilderAgent)agent;
             if (builderAgent.Goal == BuilderAgent.GoalState.NOT_SET)
             {
-                //Look for goal and set goal using builderMeshEnvironment List of Resources and choosing the closest one
+                builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
+                BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
+                BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
+                Point3d resourceLocation = env.GetNextResource();
                 // Generate trajectory
 
-                GenerateTrajectory(builderAgent, new Point3d(0,0,0), new Point3d(0,0,0));
+                builderAgent.Trajectory = GenerateTrajectoryBrep(env.BrepForAStar, builderAgent.Position, resourceLocation);
             }
+        }
+
+        private NurbsCurve GenerateTrajectoryBrep(Surface envBrep, Point3d startPosition, Point3d targetPosition)
+        {
+
+            double pu, pv;
+            envBrep.ClosestPoint(startPosition, out pu, out pv);
+            Point2d puv = new Point2d(pu, pv);
+
+            double qu, qv;
+            envBrep.ClosestPoint(targetPosition, out qu, out qv);
+            Point2d quv = new Point2d(qu, qv);
+
+            //Geodesic connection
+            Curve geo = envBrep.ShortPath(puv, quv, 0.1);
+
+            return geo.ToNurbsCurve();
         }
 
         class Node
