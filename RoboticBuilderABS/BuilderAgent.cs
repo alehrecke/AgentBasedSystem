@@ -67,8 +67,7 @@ namespace ABS.RoboticBuilderABS
 
         public override void PreExecute()
         {
-            //CalculateNextPosition()
-            // Conduct movement based on Force Vector
+
         }
 
         public override void Execute()
@@ -84,7 +83,7 @@ namespace ABS.RoboticBuilderABS
         public override void PostExecute()
         {
             BatteryLife -= EnergyExpenditure;
-            this.Force = Vector3d.Zero;
+            this.Force.Unitize();
         }
 
         public override List<object> GetDisplayGeometries()

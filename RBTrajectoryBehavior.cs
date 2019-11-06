@@ -10,7 +10,6 @@ namespace ABS
 {
     public class RBTrajectoryBehavior : GH_Component
     {
-        private SeparationBehavior sepBehavior = new SeparationBehavior(1, 1, 1, false);
         public RBTrajectoryBehavior()
           : base("RB-Trajectory-Behavavior", "RB-Traj",
               "Causes agents to follow goal trajectories",
@@ -20,21 +19,23 @@ namespace ABS
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddNumberParameter("Placeholder", "Placeholder", "Placeholder", GH_ParamAccess.item, 1);
+            pManager.AddNumberParameter("Weight", "Weight", "Weight", GH_ParamAccess.item, 0.5);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
         {
-            pManager.AddGenericParameter("Separation Behavior", "Behav", "Separation Behavior", GH_ParamAccess.item);
+            pManager.AddGenericParameter("RandDirBehavior", "Behav", "RandDirBehavior", GH_ParamAccess.item);
         }
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
 
-            double placeholder = 1;
-            DA.GetData("Placeholder", ref placeholder);
-         
-            DA.SetData("Separation Behavior", (object)this.sepBehavior);
+            double _weight = 1;
+            DA.GetData(0, ref _weight);
+
+
+            RandomDirectionBehaviour ranDirBehavior = new RandomDirectionBehaviour(_weight);
+            DA.SetData("RandDirBehavior", (object)ranDirBehavior);
         }
 
         protected override System.Drawing.Bitmap Icon
