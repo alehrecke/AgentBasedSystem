@@ -33,6 +33,7 @@ namespace ABS.RoboticBuilderABS
             this.Mesh = mesh;
             DetermineBaseFaces(80);
             DetermineResourceLocations();
+            DetermineChargingLocations();
             resourcePheromones = new double[Mesh.Faces.Count];
         }
 
@@ -50,7 +51,10 @@ namespace ABS.RoboticBuilderABS
         //    // return position of resource
         //    return Mesh.Faces.GetFaceCenter(acquiredResourceId);
         //}
+        public void DetermineChargingLocations()
+        {
 
+        }
         public void DetermineResourceLocations()
         {
             

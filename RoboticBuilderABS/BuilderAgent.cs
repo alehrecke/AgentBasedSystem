@@ -78,6 +78,7 @@ namespace ABS.RoboticBuilderABS
             Goal = GoalState.ACQUISITION;
             ResourceId = -1;
             BatteryLife = 100;
+            //FaceId = 0;
             Behaviors.Clear();
         }
 

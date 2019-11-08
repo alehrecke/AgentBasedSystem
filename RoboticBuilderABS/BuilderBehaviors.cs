@@ -317,7 +317,6 @@ namespace ABS.RoboticBuilderABS
             // If current mesh face has resource then change goal state
             if (env.ResourceLocations.Contains(builderAgent.FaceId))
             {
-                Debug.WriteLine("found resource" + builderAgent.Id);
                 builderAgent.hasResource = true;
                 builderAgent.Goal = BuilderAgent.GoalState.DELIVERY;
             }
@@ -363,7 +362,6 @@ namespace ABS.RoboticBuilderABS
         }
     }
 
-    
     public class ResourceDeliveryBehavior : BehaviorBase
     {
         public ResourceDeliveryBehavior()
@@ -412,7 +410,6 @@ namespace ABS.RoboticBuilderABS
             else
             {
                 //  If all adjacent faces are built, then choose a random one and move to it
-
                 int random = builderAgent.rndGenerator.Next(0, builtNeighborFaces.Count);
                 builderAgent.Position = env.Mesh.Faces.GetFaceCenter(builtNeighborFaces.ElementAt(random));
                 builderAgent.FaceId = builtNeighborFaces.ElementAt(random);
@@ -420,16 +417,4 @@ namespace ABS.RoboticBuilderABS
 
         }
     }
-
-    public class MappingBehavior : BehaviorBase
-    {
-        public MappingBehavior()
-        {
-
-        }
-        public override void Execute(AgentBase agent)
-        {
-        }
-    }
-
 }
