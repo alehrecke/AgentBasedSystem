@@ -22,8 +22,8 @@ namespace ABS
         {
             pManager.AddNumberParameter("Weight", "Weight", "Weight", GH_ParamAccess.item, 1);
             pManager.AddNumberParameter("Distance", "Distance", "Distance", GH_ParamAccess.item, 1);
-            pManager.AddNumberParameter("Power", "Power", "Power", GH_ParamAccess.item, 1);
-
+            pManager.AddNumberParameter("Power", "Power", "Power", GH_ParamAccess.item, 2);
+            
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)

@@ -18,6 +18,8 @@ namespace ABS
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
             pManager.AddMeshParameter("Mesh", "Mesh", "Mesh environment for agents", GH_ParamAccess.item);
+            pManager.AddSurfaceParameter("Brep", "Brep", "Brep representation of environment for agents trajectory calculation", GH_ParamAccess.item);
+
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -28,9 +30,12 @@ namespace ABS
         protected override void SolveInstance(IGH_DataAccess DA)
         {
             Mesh inputMesh = new Mesh();   
+            Surface inputBrep = null;
             if (!DA.GetData("Mesh", ref inputMesh)) return;
-            BuilderMeshEnvironment bme = new BuilderMeshEnvironment(inputMesh);
+            if (!DA.GetData("Brep", ref inputBrep)) return;
 
+            BuilderMeshEnvironment bme = new BuilderMeshEnvironment(inputMesh, inputBrep);
+            
             DA.SetData("Environment", bme);
         }
 

@@ -20,18 +20,17 @@ namespace ABS.RoboticBuilderABS
 {
     public class BuilderAgentSystem : AgentSystemBase
     {
-        public double TimeStep = 0.02;
+        public int TimeStep = 2000;
         public double MaxSpeed = 2.0;
         public double MaxForce = 3.0;
         public double DisplacementThreshold = -1.0;
         public double TotalDisplacement = double.MaxValue;
         public BuilderMeshEnvironment BuilderEnvironment;
 
+        private static System.Timers.Timer executeTimer;
+
         protected BuilderAgentSystem()
         {
-            this.Agents = new List<AgentBase>();
-            foreach (BuilderAgent agent in this.Agents)
-                agent.FindStartingPosition();
         }
 
         public BuilderAgentSystem(List<BuilderAgent> agents, BuilderMeshEnvironment env)

@@ -28,8 +28,10 @@ namespace ABS.RoboticBuilderABS
         }
         public int FaceId;
         public Point3d Position;
+        public Point3d LastPosition;
         protected Point3d startPosition;
         protected Vector3d Force;
+        public int Id;
 
         public Vector3d Velocity;
         public GoalState Goal;
@@ -37,7 +39,7 @@ namespace ABS.RoboticBuilderABS
         public int Reach;
         public int PerceptionRange;
         public int ResourceId;
-        public Curve Trajectory;
+        public NurbsCurve Trajectory;
         public double BatteryLife;
 
         private const double EnergyExpenditure = 0.1;
@@ -58,6 +60,7 @@ namespace ABS.RoboticBuilderABS
         public override void Reset()
         {
             Position = this.startPosition;
+            LastPosition = Position;
             Force = Vector3d.Zero;
             Goal = GoalState.NOT_SET;
             ResourceId = -1;
@@ -90,7 +93,10 @@ namespace ABS.RoboticBuilderABS
         {
             return new List<object>()
             {
-                (object) this.Position
+                (object) this.Position,
+                (object) this.LastPosition,
+                (object) new Line(Position, LastPosition),
+                (object) this.Trajectory
             };
         }
 
@@ -118,6 +124,7 @@ namespace ABS.RoboticBuilderABS
             // change to all adjacent faces or better all faces in reach
             int[] adjacentFacesIndexes = meshRef.Faces.AdjacentFaces(this.FaceId);
 
+            LastPosition = Position;
             Point3d currentPosition = this.Position;
             double minAngle = double.MaxValue;
             int newFaceId = 0; 

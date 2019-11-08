@@ -6,6 +6,9 @@ using Grasshopper.Kernel;
 using ICD.AbmFramework.Core.Agent;
 using ICD.AbmFramework.Core.AgentSystem;
 using Rhino.Geometry;
+using System;
+using System.Diagnostics;
+using System.Timers;
 
 namespace ABS
 {
@@ -13,6 +16,8 @@ namespace ABS
     {
         private List<AgentSystemBase> iAgentSystems = new List<AgentSystemBase>();
         private BuilderSolver solver;
+        private bool executeStep = false;
+        private int TimeStep = 2000;
 
         public RBSolver()
           : base("RoboticBuilderSolver", "RB-Solver",
@@ -26,6 +31,8 @@ namespace ABS
             pManager.AddBooleanParameter("Reset", "R", "Reset", GH_ParamAccess.item, false);
             pManager.AddBooleanParameter("Execute", "E", "Execute", GH_ParamAccess.item, false);
             pManager.AddGenericParameter("Agent Systems", "AS", "Agent Systems", GH_ParamAccess.list);
+            pManager.AddIntegerParameter("Timestep", "T", "Iteration Rate", GH_ParamAccess.item, 2000);
+
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -37,13 +44,17 @@ namespace ABS
 
         protected override void SolveInstance(IGH_DataAccess DA)
         {
-            bool destination1 = false;
-            DA.GetData<bool>("Reset", ref destination1);
-
+            bool _reset = false;
+            DA.GetData<bool>("Reset", ref _reset);
             this.iAgentSystems = new List<AgentSystemBase>();
             DA.GetDataList<AgentSystemBase>("Agent Systems", this.iAgentSystems);
 
-            if (destination1 || this.solver == null)
+            int _timestep = 2000;
+            DA.GetData<int>("Timestep", ref _timestep);
+            TimeStep = _timestep;
+
+            
+            if (_reset || this.solver == null)
             {
                 foreach (AgentSystemBase iAgentSystem in this.iAgentSystems)
                     iAgentSystem.Reset();
@@ -52,18 +63,24 @@ namespace ABS
             else
             {
                 this.solver.AgentSystems = this.iAgentSystems;
-                bool destination2 = false;
-                DA.GetData<bool>("Execute", ref destination2);
-                if (destination2 && !destination1)
+                bool _execute = false;
+                DA.GetData<bool>("Execute", ref _execute);
+                if (_execute)
                 {
                     this.solver.ExecuteSingleStep();
-                    this.ExpireSolution(true);
+                    GH_Document doc = OnPingDocument();
+                    if (doc != null) doc.ScheduleSolution(TimeStep, ScheduleCallback);
                 }
             }
 
             DA.SetDataList("Display Geometries", (IEnumerable)this.solver.GetDisplayGeometries());
             DA.SetDataList("All Agent Systems", (IEnumerable)this.solver.AgentSystems);
             DA.SetData("Iteration Count", (object)this.solver.IterationCount);
+        }
+
+        private void ScheduleCallback(GH_Document document)
+        {
+            ExpireSolution(false);
         }
 
         protected override System.Drawing.Bitmap Icon
@@ -73,6 +90,7 @@ namespace ABS
                 return null;
             }
         }
+
         public override Guid ComponentGuid
         {
             get { return new Guid("a38943df-e362-4707-a5a8-48d517255928"); }
