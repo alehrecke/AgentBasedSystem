@@ -8,18 +8,18 @@ using Rhino.Geometry;
 
 namespace ABS
 {
-    public class RBTrajectoryBehavior : GH_Component
+    public class RBRandVectBehavior : GH_Component
     {
-        public RBTrajectoryBehavior()
-          : base("RB-Trajectory-Behavavior", "RB-Traj",
-              "Causes agents to follow goal trajectories",
+        public RBRandVectBehavior()
+          : base("RB-Rand-Vect-Behavior", "RB-RandVector",
+              "Causes agents to go in random direction",
               "Thesis", "ABS")
         {
         }
 
         protected override void RegisterInputParams(GH_Component.GH_InputParamManager pManager)
         {
-            pManager.AddNumberParameter("Weight", "Weight", "Weight", GH_ParamAccess.item, 1);
+            pManager.AddNumberParameter("Weight", "Weight", "Weight", GH_ParamAccess.item, 0.5);
         }
 
         protected override void RegisterOutputParams(GH_Component.GH_OutputParamManager pManager)
@@ -30,9 +30,12 @@ namespace ABS
         protected override void SolveInstance(IGH_DataAccess DA)
         {
 
-            double placeholder = 1;
-            DA.GetData(0, ref placeholder);
-            DA.SetData("Separation Behavior", null);
+            double _weight = 1;
+            DA.GetData(0, ref _weight);
+
+
+            RandomDirectionBehaviour ranDirBehavior = new RandomDirectionBehaviour(_weight);
+            DA.SetData("RandDirBehavior", (object)ranDirBehavior);
 
         }
 
@@ -45,7 +48,7 @@ namespace ABS
         }
         public override Guid ComponentGuid
         {
-            get { return new Guid("a38943df-e362-4707-a5a8-48d517255927"); }
+            get { return new Guid("0D52D831-623B-4772-8E38-FD11B6B79F7B"); }
         }
     }
 }

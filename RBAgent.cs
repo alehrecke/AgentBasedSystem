@@ -48,7 +48,12 @@ namespace ABS
 
             for ( int i = 0; i < _agentCount; i++)
             {
+<<<<<<< HEAD
                 BuilderAgent agent = new BuilderAgent(i, _reach, 3 * _reach, _behaviors);
+=======
+                BuilderAgent agent = new BuilderAgent(_reach, 3 * _reach, _behaviors);
+                agent.Id = i;
+>>>>>>> origin/master
                 Agents.Add(agent);
             }
 

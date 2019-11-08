@@ -50,7 +50,6 @@ namespace ABS.RoboticBuilderABS
             base.Reset();
             this.TotalDisplacement = double.MaxValue;
         }
-
         public override void Execute()
         {
             this.TotalDisplacement = 0.0;
@@ -79,8 +78,8 @@ namespace ABS.RoboticBuilderABS
             List<BuilderAgent> locomotionAgentList = new List<BuilderAgent>();
             foreach (BuilderAgent agent1 in this.Agents)
             {
-                //if (agent != agent1 && agent.Position.DistanceTo(agent1.Position) < distance)
-                //    locomotionAgentList.Add(agent1);
+                if (agent != agent1 && agent.Position.DistanceTo(agent1.Position) < distance)
+                    locomotionAgentList.Add(agent1);
             }
             return locomotionAgentList;
         }
