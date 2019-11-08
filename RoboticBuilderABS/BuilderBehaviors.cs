@@ -36,10 +36,10 @@ namespace ABS.RoboticBuilderABS
         {
             BuilderAgent agent1 = (BuilderAgent)agent;
             
-            Random random = new Random();
-            double x = random.Next(-1, 1);
-            double y = random.Next(-1, 1);
-            double z = random.Next(-1, 1);
+           
+            double x = agent1.rndGenerator.Next(-1, 1);
+            double y = agent1.rndGenerator.Next(-1, 1);
+            double z = agent1.rndGenerator.Next(-1, 1);
 
             Vector3d finalVector = new Vector3d(x, y, z);
 
@@ -288,11 +288,16 @@ namespace ABS.RoboticBuilderABS
         }
         public override void Execute(AgentBase agent)
         {
-            // Walk randomly and prefer mesh faces that have higher amounts of pheromones on them until we reach a resource location
-
-            // Then change goal state
             BuilderAgent builderAgent = (BuilderAgent)agent;
-            builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
+            // If current mesh face has resource Then change goal state
+            builderAgent.hasResource = true;
+            builderAgent.Goal = BuilderAgent.GoalState.DELIVERY;
+
+            // Else
+            // Walk randomly and prefer mesh faces that have higher amounts of pheromones on them until we reach a resource location
+            // check adjacent faces for highest pheromone level and walk to that one
+            // if no face has pheromones then choose one randomly to walk to
+
         }
     }
 
@@ -305,10 +310,10 @@ namespace ABS.RoboticBuilderABS
         }
         public override void Execute(AgentBase agent)
         {
-            // walk randomly until we hit a mesh face with an unbuilt mesh as a neighbor and build that mesh face
-            
-            // Then change goal state
             BuilderAgent builderAgent = (BuilderAgent)agent;
+            // walk randomly until we hit a mesh face with an unbuilt mesh as a neighbor and build that mesh face
+
+            // Then change goal state
             builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
 
         }

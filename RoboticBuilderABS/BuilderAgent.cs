@@ -26,6 +26,9 @@ namespace ABS.RoboticBuilderABS
             DELIVERY = 2,
             CHARGING = 3
         }
+
+        public Random rndGenerator;
+        public int Id;
         public int FaceId;
         public Point3d Position;
         public Point3d LastPosition;
@@ -34,7 +37,7 @@ namespace ABS.RoboticBuilderABS
 
         public Vector3d Velocity;
         public GoalState Goal;
-        public Point3d GoalPosition;
+        public bool hasResource;
         public int Reach;
         public int PerceptionRange;
         public int ResourceId;
@@ -43,12 +46,14 @@ namespace ABS.RoboticBuilderABS
 
         private const double EnergyExpenditure = 0.1;
 
-        public BuilderAgent(int _reach, int _perceptionRange, List<BehaviorBase> _behaviors)
+        public BuilderAgent(int _id, int _reach, int _perceptionRange, List<BehaviorBase> _behaviors)
         {
             // get faceID from position
             // AgentSystem property gets filled by agent system, leave alone for now
             
            //Position = startPosition;
+            Id = _id;
+            rndGenerator = new Random(Id);
             Reach = _reach;
             PerceptionRange = _perceptionRange;
             Behaviors = _behaviors;
@@ -63,7 +68,6 @@ namespace ABS.RoboticBuilderABS
             Force = Vector3d.Zero;
             Goal = GoalState.NOT_SET;
             ResourceId = -1;
-            GoalPosition = Point3d.Unset;
             BatteryLife = 100;
             Behaviors.Clear();
         }

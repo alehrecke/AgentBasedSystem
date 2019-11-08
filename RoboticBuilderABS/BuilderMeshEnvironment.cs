@@ -56,9 +56,10 @@ namespace ABS.RoboticBuilderABS
 
         public void DetermineResourceLocations()
         {
-            Random rnd = new Random();
-            int randomLocation = rnd.Next(0, ConstructedFaces.Count);
-            ResourceLocations.Add(randomLocation);
+            
+            ResourceLocations.Add(0);
+            ResourceLocations.Add(5);
+
         }
 
         private void DetermineBaseFaces(int baseFaceCount)
