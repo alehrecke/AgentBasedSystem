@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -116,7 +117,7 @@ namespace ABS.RoboticBuilderABS
                 builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
                 BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
                 BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
-                Point3d resourceLocation = env.GetNextResource();
+                //Point3d resourceLocation = env.GetNextResource();
                 // Generate trajectory
 
                 //builderAgent.Trajectory = GenerateTrajectoryBrep(env.BrepForAStar, builderAgent.Position, resourceLocation);
@@ -296,7 +297,6 @@ namespace ABS.RoboticBuilderABS
         }
     }
 
-    
     public class ResourceAcquisitionBehavior : BehaviorBase
     {
         public ResourceAcquisitionBehavior()
@@ -306,15 +306,60 @@ namespace ABS.RoboticBuilderABS
         public override void Execute(AgentBase agent)
         {
             BuilderAgent builderAgent = (BuilderAgent)agent;
-            // If current mesh face has resource Then change goal state
-            builderAgent.hasResource = true;
-            builderAgent.Goal = BuilderAgent.GoalState.DELIVERY;
+            BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
+            BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
 
-            // Else
-            // Walk randomly and prefer mesh faces that have higher amounts of pheromones on them until we reach a resource location
-            // check adjacent faces for highest pheromone level and walk to that one
-            // if no face has pheromones then choose one randomly to walk to
+            if (builderAgent.Goal != BuilderAgent.GoalState.ACQUISITION)
+            {
+                return;
+            }
 
+            // If current mesh face has resource then change goal state
+            if (env.ResourceLocations.Contains(builderAgent.FaceId))
+            {
+                Debug.WriteLine("found resource" + builderAgent.Id);
+                builderAgent.hasResource = true;
+                builderAgent.Goal = BuilderAgent.GoalState.DELIVERY;
+            }
+            else
+            {
+
+                //  Get neighbor faces
+                int[] neighbors = env.Mesh.Faces.AdjacentFaces(builderAgent.FaceId);
+                //  Cull un-built faces
+                HashSet<int> builtNeighborFaces = new HashSet<int>();
+                foreach (int x in neighbors)
+                {
+                    if (env.ConstructedFaces.Contains(x))
+                    {
+                        builtNeighborFaces.Add(x);
+                    }
+                }
+                //  Check which one has highest pheromone
+                int faceWithHighestPheromone = -1;
+                double pheromoneLevel = 0;
+                foreach (int y in builtNeighborFaces)
+                {
+                    if (env.resourcePheromones[y] > pheromoneLevel)
+                    {
+                        pheromoneLevel = env.resourcePheromones[y];
+                        faceWithHighestPheromone = y;
+                    }
+                }
+
+                //  If no faces have pheromones choose one randomly
+                if (faceWithHighestPheromone == -1)
+                {
+                    int random = builderAgent.rndGenerator.Next(0, builtNeighborFaces.Count);
+                    builderAgent.Position = env.Mesh.Faces.GetFaceCenter(builtNeighborFaces.ElementAt(random));
+                    builderAgent.FaceId = builtNeighborFaces.ElementAt(random);
+                }
+                else
+                {
+                    builderAgent.Position = env.Mesh.Faces.GetFaceCenter(faceWithHighestPheromone);
+                    builderAgent.FaceId = faceWithHighestPheromone;
+                }
+            }
         }
     }
 
@@ -328,10 +373,50 @@ namespace ABS.RoboticBuilderABS
         public override void Execute(AgentBase agent)
         {
             BuilderAgent builderAgent = (BuilderAgent)agent;
-            // walk randomly until we hit a mesh face with an unbuilt mesh as a neighbor and build that mesh face
+            BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
+            BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
 
-            // Then change goal state
-            builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
+            if (builderAgent.Goal != BuilderAgent.GoalState.DELIVERY)
+            {
+                return;
+            }
+
+            //  Get neighbor faces
+            int[] neighbors = env.Mesh.Faces.AdjacentFaces(builderAgent.FaceId);
+            //  Find unbuilt faces
+            HashSet<int> builtNeighborFaces = new HashSet<int>();
+            HashSet<int> unbuiltNeighborFaces = new HashSet<int>();
+            foreach (int x in neighbors)
+            {
+                if (env.ConstructedFaces.Contains(x))
+                {
+                    builtNeighborFaces.Add(x);
+                }
+                else
+                {
+                    unbuiltNeighborFaces.Add(x);
+                }
+            }
+
+            if (unbuiltNeighborFaces.Count > 0)
+            {
+                // choose one of them and build it (add face id to built faces)
+                // prefer faces with smaller z value!!!! Still gotta implement this
+                env.ConstructedFaces.Add(unbuiltNeighborFaces.First());
+                builderAgent.Position = env.Mesh.Faces.GetFaceCenter(unbuiltNeighborFaces.First());
+                builderAgent.FaceId = unbuiltNeighborFaces.First();
+                // tell agent to look for resource again
+                builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
+
+            }
+            else
+            {
+                //  If all adjacent faces are built, then choose a random one and move to it
+
+                int random = builderAgent.rndGenerator.Next(0, builtNeighborFaces.Count);
+                builderAgent.Position = env.Mesh.Faces.GetFaceCenter(builtNeighborFaces.ElementAt(random));
+                builderAgent.FaceId = builtNeighborFaces.ElementAt(random);
+            }
 
         }
     }

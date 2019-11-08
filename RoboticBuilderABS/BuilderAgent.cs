@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -30,7 +31,7 @@ namespace ABS.RoboticBuilderABS
         public Random rndGenerator;
         public int Id;
         public int FaceId;
-        public Point3d Position;
+        private Point3d position;
         public Point3d LastPosition;
         protected Point3d startPosition;
         protected Vector3d Force;
@@ -46,6 +47,14 @@ namespace ABS.RoboticBuilderABS
 
         private const double EnergyExpenditure = 0.1;
 
+        public Point3d Position { get => position;
+            set
+            {
+                LastPosition = Position;
+                position = value;
+            }
+        }
+
         public BuilderAgent(int _id, int _reach, int _perceptionRange, List<BehaviorBase> _behaviors)
         {
             // get faceID from position
@@ -57,7 +66,7 @@ namespace ABS.RoboticBuilderABS
             Reach = _reach;
             PerceptionRange = _perceptionRange;
             Behaviors = _behaviors;
-            Goal = GoalState.NOT_SET;
+            Goal = GoalState.ACQUISITION;
             BatteryLife = 100;
         }
 
@@ -66,7 +75,7 @@ namespace ABS.RoboticBuilderABS
             Position = this.startPosition;
             LastPosition = Position;
             Force = Vector3d.Zero;
-            Goal = GoalState.NOT_SET;
+            Goal = GoalState.ACQUISITION;
             ResourceId = -1;
             BatteryLife = 100;
             Behaviors.Clear();
@@ -81,10 +90,9 @@ namespace ABS.RoboticBuilderABS
         {
             foreach (BehaviorBase behavior in this.Behaviors)
             {
-                Console.WriteLine(behavior.ToString());
                 behavior.Execute((AgentBase)this);
             }
-            CalculateNextPosition(this.Force);
+            //CalculateNextPosition(this.Force);
         }
 
         public override void PostExecute()
@@ -114,12 +122,13 @@ namespace ABS.RoboticBuilderABS
             //choose one of the preconstructed faces
             BuilderMeshEnvironment env = ((BuilderAgentSystem)this.AgentSystem).BuilderEnvironment;
             Mesh meshRef = env.Mesh;
-            this.FaceId = env.ConstructedFaces[0];
+            this.FaceId = env.ConstructedFaces.First();
             Point3d tempPos  = meshRef.Faces.GetFaceCenter(this.FaceId);
             this.startPosition = tempPos;
             this.Position = tempPos;
         }
 
+        
         public void CalculateNextPosition(Vector3d finalVector)
         {   
             // later change mesh to only constructed faces
