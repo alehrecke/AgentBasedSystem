@@ -65,6 +65,7 @@ namespace ABS.RoboticBuilderABS
             ResourceId = -1;
             GoalPosition = Point3d.Unset;
             BatteryLife = 100;
+            Behaviors.Clear();
         }
 
         public override void PreExecute()

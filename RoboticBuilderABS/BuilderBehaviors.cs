@@ -102,7 +102,7 @@ namespace ABS.RoboticBuilderABS
                 Point3d resourceLocation = env.GetNextResource();
                 // Generate trajectory
 
-                builderAgent.Trajectory = GenerateTrajectoryBrep(env.BrepForAStar, builderAgent.Position, resourceLocation);
+                //builderAgent.Trajectory = GenerateTrajectoryBrep(env.BrepForAStar, builderAgent.Position, resourceLocation);
             }
         }
 
@@ -279,7 +279,7 @@ namespace ABS.RoboticBuilderABS
         }
     }
 
-    // Pick up resource if position is equal to resource position and switch Goal State
+    
     public class ResourceAcquisitionBehavior : BehaviorBase
     {
         public ResourceAcquisitionBehavior()
@@ -288,10 +288,15 @@ namespace ABS.RoboticBuilderABS
         }
         public override void Execute(AgentBase agent)
         {
+            // Walk randomly and prefer mesh faces that have higher amounts of pheromones on them until we reach a resource location
+
+            // Then change goal state
+            BuilderAgent builderAgent = (BuilderAgent)agent;
+            builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
         }
     }
 
-    // Deposit resource if position is equal to build site position and switch goal state
+    
     public class ResourceDeliveryBehavior : BehaviorBase
     {
         public ResourceDeliveryBehavior()
@@ -300,6 +305,12 @@ namespace ABS.RoboticBuilderABS
         }
         public override void Execute(AgentBase agent)
         {
+            // walk randomly until we hit a mesh face with an unbuilt mesh as a neighbor and build that mesh face
+            
+            // Then change goal state
+            BuilderAgent builderAgent = (BuilderAgent)agent;
+            builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
+
         }
     }
 
