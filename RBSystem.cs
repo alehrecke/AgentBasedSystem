@@ -41,7 +41,7 @@ namespace ABS
             DA.GetDataList<BuilderAgent>("RB-Agents", tempAgents);
 
             bool reload = false;
-            if (localAgents.Count != tempAgents.Count)
+            if (localAgents.Count != tempAgents.Count || firstRun)
             {
                 reload = true;
             }
@@ -62,8 +62,8 @@ namespace ABS
                 agentSystem = new BuilderAgentSystem(localAgents, builderMeshEnv);
             }
             agentSystem.BuilderEnvironment = builderMeshEnv;
+            if(agentSystem != null) DA.SetData("RB-Sys", (object)this.agentSystem);
 
-            DA.SetData("RB-Sys", (object)this.agentSystem);
         }
 
         protected override System.Drawing.Bitmap Icon

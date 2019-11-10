@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,16 +27,18 @@ namespace ABS.RoboticBuilderABS
             DELIVERY = 2,
             CHARGING = 3
         }
+
+        public Random rndGenerator;
+        public int Id;
         public int FaceId;
-        public Point3d Position;
+        private Point3d position;
         public Point3d LastPosition;
         protected Point3d startPosition;
         protected Vector3d Force;
-        public int Id;
 
         public Vector3d Velocity;
         public GoalState Goal;
-        public Point3d GoalPosition;
+        public bool hasResource;
         public int Reach;
         public int PerceptionRange;
         public int ResourceId;
@@ -44,16 +47,26 @@ namespace ABS.RoboticBuilderABS
 
         private const double EnergyExpenditure = 0.1;
 
-        public BuilderAgent(int _reach, int _perceptionRange, List<BehaviorBase> _behaviors)
+        public Point3d Position { get => position;
+            set
+            {
+                LastPosition = Position;
+                position = value;
+            }
+        }
+
+        public BuilderAgent(int _id, int _reach, int _perceptionRange, List<BehaviorBase> _behaviors)
         {
             // get faceID from position
             // AgentSystem property gets filled by agent system, leave alone for now
             
            //Position = startPosition;
+            Id = _id;
+            rndGenerator = new Random(Id);
             Reach = _reach;
             PerceptionRange = _perceptionRange;
             Behaviors = _behaviors;
-            Goal = GoalState.NOT_SET;
+            Goal = GoalState.ACQUISITION;
             BatteryLife = 100;
         }
 
@@ -62,10 +75,11 @@ namespace ABS.RoboticBuilderABS
             Position = this.startPosition;
             LastPosition = Position;
             Force = Vector3d.Zero;
-            Goal = GoalState.NOT_SET;
+            Goal = GoalState.ACQUISITION;
             ResourceId = -1;
-            GoalPosition = Point3d.Unset;
             BatteryLife = 100;
+            //FaceId = 0;
+            Behaviors.Clear();
         }
 
         public override void PreExecute()
@@ -77,10 +91,9 @@ namespace ABS.RoboticBuilderABS
         {
             foreach (BehaviorBase behavior in this.Behaviors)
             {
-                Console.WriteLine(behavior.ToString());
                 behavior.Execute((AgentBase)this);
             }
-            CalculateNextPosition(this.Force);
+            //CalculateNextPosition(this.Force);
         }
 
         public override void PostExecute()
@@ -110,12 +123,13 @@ namespace ABS.RoboticBuilderABS
             //choose one of the preconstructed faces
             BuilderMeshEnvironment env = ((BuilderAgentSystem)this.AgentSystem).BuilderEnvironment;
             Mesh meshRef = env.Mesh;
-            this.FaceId = env.ConstructedFaces[0];
+            this.FaceId = env.ConstructedFaces.First();
             Point3d tempPos  = meshRef.Faces.GetFaceCenter(this.FaceId);
             this.startPosition = tempPos;
             this.Position = tempPos;
         }
 
+        
         public void CalculateNextPosition(Vector3d finalVector)
         {   
             // later change mesh to only constructed faces

@@ -44,6 +44,7 @@ namespace ABS.RoboticBuilderABS
                 ((BuilderAgent)agent).FindStartingPosition();
             }
         }
+
         public override void Reset()
         {
             base.Reset();

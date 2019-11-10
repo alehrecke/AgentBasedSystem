@@ -22,44 +22,47 @@ namespace ABS.RoboticBuilderABS
     public class BuilderMeshEnvironment : EnvironmentBase
     {
         public Mesh Mesh;
-        public Surface BrepForAStar;
 
-        public List<int> ResourceLocations = new List<int>();
-        public List<int> ClaimedResources = new List<int>();
-        public List<int> ConstructionLocations = new List<int>();
+        public HashSet<int> ResourceLocations = new HashSet<int>();
+        public HashSet<int> ConstructedFaces = new HashSet<int>();
+        public double[] resourcePheromones;
         public List<int> ChargingLocations = new List<int>();
-        public List<int> ConstructedFaces = new List<int>();
+
         public List<Point3d> MeshFaceCentres = new List<Point3d>();
         
-        public BuilderMeshEnvironment(Mesh mesh, Surface brep)
+        public BuilderMeshEnvironment(Mesh mesh)
         {
             this.Mesh = mesh;
-            this.BrepForAStar = brep;
             DetermineBaseFaces(80);
             DetermineResourceLocations();
-            GetMeshFaceCenters(mesh);
+            DetermineChargingLocations();
+            resourcePheromones = new double[Mesh.Faces.Count];
         }
 
-        public Point3d GetNextResource()
+        //public Point3d GetNextResource()
+        //{
+        //    if (ResourceLocations.Count <= 0)
+        //    {
+        //        return new Point3d();
+        //    }
+        //    // pop from resource locations
+        //    int acquiredResourceId = ResourceLocations[0];
+        //    // add to claimed resources
+        //    ClaimedResources.Add(acquiredResourceId);
+        //    ResourceLocations.Remove(0);
+        //    // return position of resource
+        //    return Mesh.Faces.GetFaceCenter(acquiredResourceId);
+        //}
+        public void DetermineChargingLocations()
         {
-            if (ResourceLocations.Count <= 0)
-            {
-                return new Point3d();
-            }
-            // pop from resource locations
-            int acquiredResourceId = ResourceLocations[0];
-            // add to claimed resources
-            ClaimedResources.Add(acquiredResourceId);
-            ResourceLocations.Remove(0);
-            // return position of resource
-            return Mesh.Faces.GetFaceCenter(acquiredResourceId);
-        }
 
+        }
         public void DetermineResourceLocations()
         {
-            Random rnd = new Random();
-            int randomLocation = rnd.Next(0, ConstructedFaces.Count);
-            ResourceLocations.Add(randomLocation);
+            
+            ResourceLocations.Add(12);
+            ResourceLocations.Add(50);
+            ResourceLocations.Add(35);
         }
 
         //private void DetermineBaseFaces(int baseFaceCount)
@@ -144,7 +147,6 @@ namespace ABS.RoboticBuilderABS
 
             return constructedFaces;
         }
-
         public void GetMeshFaceCenters(Mesh mesh)
         {
             for (int i = 0; i < mesh.Faces.Count; i++)
