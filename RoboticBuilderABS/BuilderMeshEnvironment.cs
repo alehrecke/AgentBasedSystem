@@ -29,16 +29,15 @@ namespace ABS.RoboticBuilderABS
         public List<int> ConstructionLocations = new List<int>();
         public List<int> ChargingLocations = new List<int>();
         public List<int> ConstructedFaces = new List<int>();
-
-
-
-
+        public List<Point3d> MeshFaceCentres = new List<Point3d>();
+        
         public BuilderMeshEnvironment(Mesh mesh, Surface brep)
         {
             this.Mesh = mesh;
             this.BrepForAStar = brep;
             DetermineBaseFaces(80);
             DetermineResourceLocations();
+            GetMeshFaceCenters(mesh);
         }
 
         public Point3d GetNextResource()
@@ -63,12 +62,29 @@ namespace ABS.RoboticBuilderABS
             ResourceLocations.Add(randomLocation);
         }
 
+        //private void DetermineBaseFaces(int baseFaceCount)
+        //{
+
+
+        //    Point3d[] WorkingMeshFCentres = new Point3d[Mesh.Faces.Count];
+        //    MeshFaceCentres.CopyTo(WorkingMeshFCentres);
+        //    WorkingMeshFCentres.OrderBy<>
+
+        //    for (int i = 0; i < baseFaceCount; i++)
+        //    {
+        //        foreach (Point3d center in MeshFaceCentres)
+        //        {
+        //            if center.Z
+        //        } 
+
+        //        ConstructedFaces.Add(i);
+
+        //    }
+        //}
         private void DetermineBaseFaces(int baseFaceCount)
         {
             for (int i = 0; i < baseFaceCount; i++)
-            {
                 ConstructedFaces.Add(i);
-            }
         }
 
         public void SetMesh(Mesh mesh)
@@ -129,5 +145,12 @@ namespace ABS.RoboticBuilderABS
             return constructedFaces;
         }
 
+        public void GetMeshFaceCenters(Mesh mesh)
+        {
+            for (int i = 0; i < mesh.Faces.Count; i++)
+            {
+                this.MeshFaceCentres.Add(mesh.Faces.GetFaceCenter(i));
+            }
+        }
     }
 }
