@@ -24,72 +24,101 @@ namespace ABS.RoboticBuilderABS
         public Mesh Mesh;
 
         public HashSet<int> ResourceLocations = new HashSet<int>();
+        public HashSet<int> ChargingLocations = new HashSet<int>();
         public HashSet<int> ConstructedFaces = new HashSet<int>();
-        public double[] resourcePheromones;
-        public List<int> ChargingLocations = new List<int>();
+        public double[] ResourcePheromones;
+        public double[] BuildLocationPheromones;
+        public double[] ChargingLocationPheromones;
 
-        public List<Point3d> MeshFaceCentres = new List<Point3d>();
-        
         public BuilderMeshEnvironment(Mesh mesh)
         {
             this.Mesh = mesh;
-            DetermineBaseFaces(80);
+            DetermineBaseFaces(40);
             DetermineResourceLocations();
             DetermineChargingLocations();
-            resourcePheromones = new double[Mesh.Faces.Count];
+            ResourcePheromones = new double[Mesh.Faces.Count];
+            BuildLocationPheromones = new double[Mesh.Faces.Count];
+            ChargingLocationPheromones = new double[Mesh.Faces.Count];
         }
 
-        //public Point3d GetNextResource()
-        //{
-        //    if (ResourceLocations.Count <= 0)
-        //    {
-        //        return new Point3d();
-        //    }
-        //    // pop from resource locations
-        //    int acquiredResourceId = ResourceLocations[0];
-        //    // add to claimed resources
-        //    ClaimedResources.Add(acquiredResourceId);
-        //    ResourceLocations.Remove(0);
-        //    // return position of resource
-        //    return Mesh.Faces.GetFaceCenter(acquiredResourceId);
-        //}
+        public void Reset()
+        {
+            ConstructedFaces.Clear();
+            DetermineBaseFaces(40);
+            DetermineResourceLocations();
+            DetermineChargingLocations();
+            ResourcePheromones = new double[Mesh.Faces.Count];
+            BuildLocationPheromones = new double[Mesh.Faces.Count];
+            ChargingLocationPheromones = new double[Mesh.Faces.Count];
+        }
+        
+        
         public void DetermineChargingLocations()
         {
+            ChargingLocations.Add(ConstructedFaces.ElementAt(20));
+            
 
         }
         public void DetermineResourceLocations()
         {
-            
-            ResourceLocations.Add(12);
-            ResourceLocations.Add(50);
-            ResourceLocations.Add(35);
+            ResourceLocations.Add(ConstructedFaces.ElementAt(0));
+
+        }
+        public void FadePheromonesArrays()
+        {
+            for (int i = 0; i < this.ResourcePheromones.Length; i++)
+            {
+                if (this.ResourcePheromones[i] > 0)
+                    this.ResourcePheromones[i]--; 
+            }
+            for (int i = 0; i < this.BuildLocationPheromones.Length; i++)
+            {
+                if (this.BuildLocationPheromones[i] > 0)
+                    this.BuildLocationPheromones[i]--;
+            }
+            for (int i = 0; i < this.ChargingLocationPheromones.Length; i++)
+            {
+                if (this.ChargingLocationPheromones[i] > 0)
+                    this.ChargingLocationPheromones[i]--;
+            }
+
         }
 
-        //private void DetermineBaseFaces(int baseFaceCount)
-        //{
-
-
-        //    Point3d[] WorkingMeshFCentres = new Point3d[Mesh.Faces.Count];
-        //    MeshFaceCentres.CopyTo(WorkingMeshFCentres);
-        //    WorkingMeshFCentres.OrderBy<>
-
-        //    for (int i = 0; i < baseFaceCount; i++)
-        //    {
-        //        foreach (Point3d center in MeshFaceCentres)
-        //        {
-        //            if center.Z
-        //        } 
-
-        //        ConstructedFaces.Add(i);
-
-        //    }
-        //}
         private void DetermineBaseFaces(int baseFaceCount)
         {
-            for (int i = 0; i < baseFaceCount; i++)
-                ConstructedFaces.Add(i);
-        }
+            
+            List<Point3d> MeshFaceCentres = new List<Point3d>();
+            List<int> FaceIndexes = new List<int>();
 
+            for (int i = 0; i< this.Mesh.Faces.Count; i++)
+            { 
+                MeshFaceCentres.Add(this.Mesh.Faces.GetFaceCenter(i));
+                FaceIndexes.Add(i);
+            }
+
+            for (int i = 0; i < baseFaceCount; i++)
+            {
+                double smallestZ = double.MaxValue;
+                Point3d lowerPoint = new Point3d(0, 0, 0);
+                int lowerIndex = int.MaxValue;
+
+                for (int j = 0; j < MeshFaceCentres.Count; j++)
+                {
+                    if (MeshFaceCentres[j].Z < smallestZ)
+                    {
+                        smallestZ = MeshFaceCentres[j].Z;
+                        lowerPoint = MeshFaceCentres[j];
+                        lowerIndex = FaceIndexes[j];
+                    }
+
+                }
+                ConstructedFaces.Add(lowerIndex);
+
+                MeshFaceCentres.Remove(lowerPoint);
+                FaceIndexes.Remove(lowerIndex);
+            }
+        }
+ 
         public void SetMesh(Mesh mesh)
         {
             this.Mesh = mesh;
@@ -147,12 +176,7 @@ namespace ABS.RoboticBuilderABS
 
             return constructedFaces;
         }
-        public void GetMeshFaceCenters(Mesh mesh)
-        {
-            for (int i = 0; i < mesh.Faces.Count; i++)
-            {
-                this.MeshFaceCentres.Add(mesh.Faces.GetFaceCenter(i));
-            }
-        }
+        
     }
 }
+

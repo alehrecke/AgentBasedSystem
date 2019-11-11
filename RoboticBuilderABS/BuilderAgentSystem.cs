@@ -49,12 +49,14 @@ namespace ABS.RoboticBuilderABS
         {
             base.Reset();
             this.TotalDisplacement = double.MaxValue;
+            this.BuilderEnvironment.Reset();
         }
         public override void Execute()
         {
             this.TotalDisplacement = 0.0;
             foreach (AgentBase agent in this.Agents)
                 agent.Execute();
+            this.BuilderEnvironment.FadePheromonesArrays();
         }
 
         public override List<object> GetDisplayGeometries()

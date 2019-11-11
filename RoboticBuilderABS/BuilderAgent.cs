@@ -30,20 +30,22 @@ namespace ABS.RoboticBuilderABS
 
         public Random rndGenerator;
         public int Id;
-        public int FaceId;
+        public int faceId;
         private Point3d position;
         public Point3d LastPosition;
+        public int LastFaceId;
         protected Point3d startPosition;
         protected Vector3d Force;
 
         public Vector3d Velocity;
-        public GoalState Goal;
+        private GoalState goal;
         public bool hasResource;
         public int Reach;
         public int PerceptionRange;
         public int ResourceId;
         public NurbsCurve Trajectory;
         public double BatteryLife;
+        public double PheromoneCount;
 
         private const double EnergyExpenditure = 0.1;
 
@@ -53,6 +55,21 @@ namespace ABS.RoboticBuilderABS
                 LastPosition = Position;
                 position = value;
             }
+        }
+        public int FaceId { get => faceId;
+            set
+            {
+                LastFaceId = FaceId;
+                faceId = value;
+            }
+        }
+
+        public GoalState Goal { get => goal;
+            set
+            {
+                ResetPheromoneCount();
+                goal = value;
+            } 
         }
 
         public BuilderAgent(int _id, int _reach, int _perceptionRange, List<BehaviorBase> _behaviors)
@@ -68,6 +85,8 @@ namespace ABS.RoboticBuilderABS
             Behaviors = _behaviors;
             Goal = GoalState.ACQUISITION;
             BatteryLife = 100;
+
+
         }
 
         public override void Reset()
@@ -93,7 +112,6 @@ namespace ABS.RoboticBuilderABS
             {
                 behavior.Execute((AgentBase)this);
             }
-            //CalculateNextPosition(this.Force);
         }
 
         public override void PostExecute()
@@ -101,6 +119,43 @@ namespace ABS.RoboticBuilderABS
             BatteryLife -= EnergyExpenditure;
             this.Force.Unitize();
         }
+
+        
+        public void ResetPheromoneCount()
+        {
+            this.PheromoneCount = 35; 
+        }
+
+        public void DropPheromones()
+        {
+            BuilderMeshEnvironment env = ((BuilderAgentSystem)this.AgentSystem).BuilderEnvironment;
+
+            if (this.Goal == BuilderAgent.GoalState.ACQUISITION)
+            {
+                if (this.PheromoneCount > 0)
+                {
+                    env.BuildLocationPheromones[this.FaceId]++;
+                    this.PheromoneCount--;
+                }
+            }
+            if (this.Goal == BuilderAgent.GoalState.DELIVERY)
+            {
+                if (this.PheromoneCount > 0)
+                {
+                    env.ResourcePheromones[this.FaceId]++;
+                    this.PheromoneCount--;
+                }
+            }
+            if (this.Goal == BuilderAgent.GoalState.CHARGING)
+            {
+                if (this.PheromoneCount > 0)
+                {
+                    env.ChargingLocationPheromones[this.FaceId]++;
+                    this.PheromoneCount--;
+                }
+            }
+        }
+
 
         public override List<object> GetDisplayGeometries()
         {
@@ -128,7 +183,6 @@ namespace ABS.RoboticBuilderABS
             this.startPosition = tempPos;
             this.Position = tempPos;
         }
-
         
         public void CalculateNextPosition(Vector3d finalVector)
         {   

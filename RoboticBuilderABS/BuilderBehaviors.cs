@@ -41,253 +41,96 @@ namespace ABS.RoboticBuilderABS
         }
     }
 
-    public class SeparationBehavior : BehaviorBase
+    public class RechargeBehavior : BehaviorBase
     {
-        public double Distance;
-        public double Power;
-        public bool AffectSelf;
-        public SeparationBehavior(double weight, double distance, double power, bool affectSelf)
+        public RechargeBehavior()
         {
-            this.Weight = weight;
-            this.Distance = distance;
-            this.Power = power;
-            this.AffectSelf = affectSelf;
-        }
-        public override void Execute(AgentBase agent)
-        {
-            BuilderAgent agent1 = (BuilderAgent)agent;
-           
-            List<BuilderAgent> neighbors = (agent1.AgentSystem as BuilderAgentSystem).FindNeighbors(agent1, this.Distance);
-            Vector3d zero = Vector3d.Zero;
-            if (neighbors.Count == 0)
-                return;
-            foreach (BuilderAgent builderAgent in neighbors)
-            {
-                Vector3d vector3d1 = agent1.Position - builderAgent.Position;
-                double length = vector3d1.Length;
-                if (vector3d1.IsZero)
-                    vector3d1 = Vector3d.XAxis;
-                if (length < this.Distance)
-                {
-                    vector3d1.Unitize();
-                    Vector3d vector3d2 = this.Weight * vector3d1 * Math.Pow((this.Distance - length) / this.Distance, this.Power) * this.Distance;
-                    if (this.AffectSelf)
-                        zero += vector3d2;
-                    else
-                        builderAgent.AddForce(-vector3d2);
-                }
-            }
-            agent1.AddForce(zero * this.Weight);
-        }
-    }
 
-    public class CheckBatteryBehavior : BehaviorBase
-    {
-        public override void Execute(AgentBase agent)
-        {
-            BuilderAgent builderAgent = (BuilderAgent)agent;
-            if (builderAgent.BatteryLife <= 10)
-            {
-                builderAgent.Goal = BuilderAgent.GoalState.CHARGING;
-                // interrupt! drop resource and run to the closest battery charging station
-            }
-        }
-    }
-
-    public class LookForGoalBehavior : BehaviorBase
-    {
-        public LookForGoalBehavior()
-        {
         }
 
         public override void Execute(AgentBase agent)
         {
             BuilderAgent builderAgent = (BuilderAgent)agent;
-            if (builderAgent.Goal == BuilderAgent.GoalState.NOT_SET)
-            {
-                builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
-                BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
-                BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
-                //Point3d resourceLocation = env.GetNextResource();
-                // Generate trajectory
-
-                //builderAgent.Trajectory = GenerateTrajectoryBrep(env.BrepForAStar, builderAgent.Position, resourceLocation);
-            }
-        }
-
-        private NurbsCurve GenerateTrajectoryBrep(Surface envBrep, Point3d startPosition, Point3d targetPosition)
-        {
-
-            double pu, pv;
-            envBrep.ClosestPoint(startPosition, out pu, out pv);
-            Point2d puv = new Point2d(pu, pv);
-
-            double qu, qv;
-            envBrep.ClosestPoint(targetPosition, out qu, out qv);
-            Point2d quv = new Point2d(qu, qv);
-
-            //Geodesic connection
-            Curve geo = envBrep.ShortPath(puv, quv, 0.1);
-
-            return geo.ToNurbsCurve();
-        }
-
-        class Node
-        {
-            public Point3d Location;
-            public double HCost;
-            public double GCost;
-            public Node Parent;
-            public int FaceId;
-            public bool isValidForLocomotion;
-
-            public Node(Point3d location, int faceId)
-            {
-                Location = location;
-                FaceId = faceId;
-                isValidForLocomotion = true;
-            }
-            public double FCost => GCost + HCost;
-        }
-
-        private Node NodeFromWorldPoint(Point3d worldPoint, int faceId)
-        {
-            // Actually implement a way to find closest mesh face
-            Node tempNode = new Node(worldPoint, faceId);
-            return tempNode;
-        }
-
-        private List<Node> GetNeighbors(Node node)
-        {
-            List<Node> neighbors = new List<Node>();
-            
-            return neighbors;
-        }
-
-        private double GetDistance(Node nodeA, Node nodeB)
-        {
-            return 0;
-        }
-
-        private void RetracePath(Node startNode, Node endNode)
-        {
-            List<Node> path = new List<Node>();
-            Node currentNode = endNode;
-            while (currentNode != startNode)
-            {
-                path.Add(currentNode);
-                currentNode = currentNode.Parent;
-            }
-
-            path.Reverse();
-        }
-
-        private void GenerateTrajectory(BuilderAgent agent, Point3d startPosition, Point3d targetPosition)
-        {
-           
-
             BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
             BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
-            Mesh refMesh = env.Mesh;
 
-
-            // A* Algorithm
-
-           
-            // Temporary!
-            List<Point3d> meshVertices = new List<Point3d>();
-            MeshFace mF = refMesh.Faces[10];
-            meshVertices.Add(refMesh.Vertices[mF[0]]);
-            meshVertices.Add(refMesh.Vertices[mF[1]]);
-            meshVertices.Add(refMesh.Vertices[mF[2]]);
-            if (mF.IsQuad) meshVertices.Add(refMesh.Vertices[mF[3]]);
-            Point3d centroid = new Point3d();
-            foreach (Point3d pt in meshVertices)
+            List<int> otherAgentsPosition = new List<int>();
+            foreach (BuilderAgent a in builderAgentSystem.Agents)
             {
-                centroid += pt;
+                otherAgentsPosition.Add(a.FaceId);
             }
+
+            if (builderAgent.BatteryLife <= 20)
+            {
+                builderAgent.Goal = BuilderAgent.GoalState.CHARGING;
+            }
+
+            if (builderAgent.Goal != BuilderAgent.GoalState.CHARGING)
+                return;
             
-            Node targetNode = NodeFromWorldPoint(centroid/meshVertices.Count, 10);
-            Node startNode = NodeFromWorldPoint(agent.Position, agent.FaceId);
-
-            List<Node> OpenSet = new List<Node>();
-            HashSet<Node> ClosedSet = new HashSet<Node>();
-
-            OpenSet.Add(startNode);
-
-            while (OpenSet.Count > 0)
+            if (env.ChargingLocations.Contains(builderAgent.FaceId))
             {
-                Node currentNode = OpenSet[0];
-                for (int i = 1; i < OpenSet.Count; i++)
+                if (builderAgent.BatteryLife >= 100)
                 {
-                    if (OpenSet[i].FCost < currentNode.FCost || OpenSet[i].FCost == currentNode.FCost && OpenSet[i].HCost < currentNode.HCost)
-                    {
-                        currentNode = OpenSet[i];
-                    }
-                }
-
-                OpenSet.Remove(currentNode);
-                ClosedSet.Add(currentNode);
-
-                if (currentNode == targetNode)
-                {
+                    builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
                     return;
+                } 
+                builderAgent.BatteryLife += 10;
+            }
+            else
+            {
+                //  Get neighbor faces
+                int[] neighbors = env.Mesh.Faces.AdjacentFaces(builderAgent.FaceId);
+                //  Cull un-built faces
+                HashSet<int> builtNeighborFaces = new HashSet<int>();
+                foreach (int x in neighbors)
+                {
+                    if (env.ConstructedFaces.Contains(x))
+                    {
+                        builtNeighborFaces.Add(x);
+                    }
+                }
+                //  Check which one has highest pheromone
+
+                int faceWithHighestPheromone = -1;
+                double pheromoneLevel = 0;
+                foreach (int y in builtNeighborFaces)
+                {
+                    if (env.ChargingLocationPheromones[y] > pheromoneLevel)
+                    {
+                        pheromoneLevel = env.ChargingLocationPheromones[y];
+                        faceWithHighestPheromone = y;
+                    }
                 }
 
-                foreach (Node neighborNode in GetNeighbors(currentNode))
+                //  If no faces have pheromones choose one randomly
+                if (faceWithHighestPheromone == -1)
                 {
-                    if (!neighborNode.isValidForLocomotion || ClosedSet.Contains(neighborNode))
+                    int random = builderAgent.rndGenerator.Next(0, builtNeighborFaces.Count);
+                    if (otherAgentsPosition.Contains(builtNeighborFaces.ElementAt(random)))
+                        return;
+                    else
                     {
-                        continue;
+                        builderAgent.Position = env.Mesh.Faces.GetFaceCenter(builtNeighborFaces.ElementAt(random));
+                        builderAgent.FaceId = builtNeighborFaces.ElementAt(random);
                     }
-
-                    double newMovementCostToNeighbor = currentNode.GCost + GetDistance(currentNode, neighborNode);
-                    if (newMovementCostToNeighbor < neighborNode.GCost || !OpenSet.Contains(neighborNode))
+                }
+                else
+                {
+                    if (otherAgentsPosition.Contains(faceWithHighestPheromone))
+                        return;
+                    else
                     {
-                        neighborNode.GCost = newMovementCostToNeighbor;
-                        neighborNode.HCost = GetDistance(neighborNode, targetNode);
-                        neighborNode.Parent = currentNode;
-
-                        if (!OpenSet.Contains(neighborNode))
-                        {
-                            OpenSet.Add(neighborNode);
-                        }
+                        builderAgent.Position = env.Mesh.Faces.GetFaceCenter(faceWithHighestPheromone);
+                        builderAgent.FaceId = faceWithHighestPheromone;
                     }
                 }
             }
+            builderAgent.DropPheromones();
+
         }
     }
-
-    public class TrajectoryBehavior : BehaviorBase
-    {
-        public double Power;
-        public TrajectoryBehavior(double power)
-        {
-            this.Power = power;
-        }
-
-        public override void Execute(AgentBase agent)
-        {
-            BuilderAgent builderAgent = (BuilderAgent)agent;
-            // look for closest param on trajectory
-            // look for param a certain distance away from closest param
-            // calculate vector from one to the other
-            // add vector + power to the Force
-            // agent.AddForce(calculatedVector);
-        }
-    }
-
-    public class ObstacleAvoidanceBehavior : BehaviorBase
-    {
-        public ObstacleAvoidanceBehavior()
-        {
-
-        }
-        public override void Execute(AgentBase agent)
-        {
-        }
-    }
-
+        
     public class ResourceAcquisitionBehavior : BehaviorBase
     {
         public ResourceAcquisitionBehavior()
@@ -300,10 +143,17 @@ namespace ABS.RoboticBuilderABS
             BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
             BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
 
+            List<int> otherAgentsPosition = new List<int>();
+            foreach (BuilderAgent a in builderAgentSystem.Agents)
+            {
+                otherAgentsPosition.Add(a.FaceId);
+            }
+
             if (builderAgent.Goal != BuilderAgent.GoalState.ACQUISITION)
             {
                 return;
             }
+            
 
             // If current mesh face has resource then change goal state
             if (env.ResourceLocations.Contains(builderAgent.FaceId))
@@ -326,13 +176,14 @@ namespace ABS.RoboticBuilderABS
                     }
                 }
                 //  Check which one has highest pheromone
+
                 int faceWithHighestPheromone = -1;
                 double pheromoneLevel = 0;
                 foreach (int y in builtNeighborFaces)
                 {
-                    if (env.resourcePheromones[y] > pheromoneLevel)
+                    if (env.ResourcePheromones[y] > pheromoneLevel)
                     {
-                        pheromoneLevel = env.resourcePheromones[y];
+                        pheromoneLevel = env.ResourcePheromones[y];
                         faceWithHighestPheromone = y;
                     }
                 }
@@ -341,15 +192,26 @@ namespace ABS.RoboticBuilderABS
                 if (faceWithHighestPheromone == -1)
                 {
                     int random = builderAgent.rndGenerator.Next(0, builtNeighborFaces.Count);
-                    builderAgent.Position = env.Mesh.Faces.GetFaceCenter(builtNeighborFaces.ElementAt(random));
-                    builderAgent.FaceId = builtNeighborFaces.ElementAt(random);
+                    if (otherAgentsPosition.Contains(builtNeighborFaces.ElementAt(random)))
+                        return;
+                    else
+                    {
+                        builderAgent.Position = env.Mesh.Faces.GetFaceCenter(builtNeighborFaces.ElementAt(random));
+                        builderAgent.FaceId = builtNeighborFaces.ElementAt(random);
+                    }
                 }
                 else
                 {
-                    builderAgent.Position = env.Mesh.Faces.GetFaceCenter(faceWithHighestPheromone);
-                    builderAgent.FaceId = faceWithHighestPheromone;
+                    if (otherAgentsPosition.Contains(faceWithHighestPheromone))
+                        return;
+                    else
+                    {
+                        builderAgent.Position = env.Mesh.Faces.GetFaceCenter(faceWithHighestPheromone);
+                        builderAgent.FaceId = faceWithHighestPheromone;
+                    }
                 }
             }
+            builderAgent.DropPheromones();
         }
     }
 
@@ -364,6 +226,12 @@ namespace ABS.RoboticBuilderABS
             BuilderAgent builderAgent = (BuilderAgent)agent;
             BuilderAgentSystem builderAgentSystem = agent.AgentSystem as BuilderAgentSystem;
             BuilderMeshEnvironment env = builderAgentSystem.BuilderEnvironment;
+
+            List<int> otherAgentsPosition = new List<int>();
+            foreach (BuilderAgent a in builderAgentSystem.Agents)
+            {
+                otherAgentsPosition.Add(a.FaceId);
+            }
 
             if (builderAgent.Goal != BuilderAgent.GoalState.DELIVERY)
             {
@@ -389,23 +257,56 @@ namespace ABS.RoboticBuilderABS
 
             if (unbuiltNeighborFaces.Count > 0)
             {
+                
                 // choose one of them and build it (add face id to built faces)
                 // prefer faces with smaller z value!!!! Still gotta implement this
                 env.ConstructedFaces.Add(unbuiltNeighborFaces.First());
                 builderAgent.Position = env.Mesh.Faces.GetFaceCenter(unbuiltNeighborFaces.First());
                 builderAgent.FaceId = unbuiltNeighborFaces.First();
+                
                 // tell agent to look for resource again
                 builderAgent.Goal = BuilderAgent.GoalState.ACQUISITION;
 
             }
             else
             {
-                //  If all adjacent faces are built, then choose a random one and move to it
-                int random = builderAgent.rndGenerator.Next(0, builtNeighborFaces.Count);
-                builderAgent.Position = env.Mesh.Faces.GetFaceCenter(builtNeighborFaces.ElementAt(random));
-                builderAgent.FaceId = builtNeighborFaces.ElementAt(random);
+                int faceWithHighestPheromone = -1;
+                double pheromoneLevel = 0;
+                foreach (int y in builtNeighborFaces)
+                {
+                    if (env.BuildLocationPheromones[y] > pheromoneLevel)
+                    {
+                        pheromoneLevel = env.ResourcePheromones[y];
+                        faceWithHighestPheromone = y;
+                    }
+                }
+
+                if (faceWithHighestPheromone == -1)
+                {
+                    int random = builderAgent.rndGenerator.Next(0, builtNeighborFaces.Count);
+                    if (otherAgentsPosition.Contains(builtNeighborFaces.ElementAt(random)))
+                        return;
+                    else
+                    {
+                        builderAgent.Position = env.Mesh.Faces.GetFaceCenter(builtNeighborFaces.ElementAt(random));
+                        builderAgent.FaceId = builtNeighborFaces.ElementAt(random);
+                    }                    
+                }
+                else
+                {
+                    if (otherAgentsPosition.Contains(faceWithHighestPheromone))
+                        return;
+                    else
+                    {
+                        builderAgent.Position = env.Mesh.Faces.GetFaceCenter(faceWithHighestPheromone);
+                        builderAgent.FaceId = faceWithHighestPheromone;
+                    }
+                }
             }
+            builderAgent.DropPheromones();
 
         }
     }
+
+    
 }
