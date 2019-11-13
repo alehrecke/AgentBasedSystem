@@ -29,7 +29,7 @@ namespace ABS.RoboticBuilderABS
 
         private static System.Timers.Timer executeTimer;
 
-        protected BuilderAgentSystem()
+        public BuilderAgentSystem()
         {
         }
 

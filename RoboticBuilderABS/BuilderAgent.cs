@@ -46,6 +46,7 @@ namespace ABS.RoboticBuilderABS
         public NurbsCurve Trajectory;
         public double BatteryLife;
         public double PheromoneCount;
+        public double dropProportion = 0.01;
 
         private const double EnergyExpenditure = 0.1;
 
@@ -56,11 +57,15 @@ namespace ABS.RoboticBuilderABS
                 position = value;
             }
         }
+
         public int FaceId { get => faceId;
             set
             {
+                ((BuilderAgentSystem) this.AgentSystem).BuilderEnvironment.OccupiedFaces.Remove(faceId);
                 LastFaceId = FaceId;
                 faceId = value;
+                ((BuilderAgentSystem)this.AgentSystem).BuilderEnvironment.OccupiedFaces.Add(faceId);
+
             }
         }
 
@@ -85,8 +90,7 @@ namespace ABS.RoboticBuilderABS
             Behaviors = _behaviors;
             Goal = GoalState.ACQUISITION;
             BatteryLife = 100;
-
-
+            
         }
 
         public override void Reset()
@@ -119,11 +123,10 @@ namespace ABS.RoboticBuilderABS
             BatteryLife -= EnergyExpenditure;
             this.Force.Unitize();
         }
-
         
         public void ResetPheromoneCount()
         {
-            this.PheromoneCount = 35; 
+            this.PheromoneCount = 50; 
         }
 
         public void DropPheromones()
@@ -134,28 +137,27 @@ namespace ABS.RoboticBuilderABS
             {
                 if (this.PheromoneCount > 0)
                 {
-                    env.BuildLocationPheromones[this.FaceId]++;
-                    this.PheromoneCount--;
+                    env.DeliveryPheromones[this.FaceId] += this.PheromoneCount * dropProportion*4;
+                    this.PheromoneCount -= this.PheromoneCount * dropProportion*4;
                 }
             }
             if (this.Goal == BuilderAgent.GoalState.DELIVERY)
             {
                 if (this.PheromoneCount > 0)
                 {
-                    env.ResourcePheromones[this.FaceId]++;
-                    this.PheromoneCount--;
+                    env.ResourcePheromones[this.FaceId] += this.PheromoneCount * dropProportion;
+                    this.PheromoneCount -= this.PheromoneCount * dropProportion;
                 }
             }
             if (this.Goal == BuilderAgent.GoalState.CHARGING)
             {
                 if (this.PheromoneCount > 0)
                 {
-                    env.ChargingLocationPheromones[this.FaceId]++;
-                    this.PheromoneCount--;
+                    env.ChargingPheromones[this.FaceId] += this.PheromoneCount * dropProportion;
+                    this.PheromoneCount -= this.PheromoneCount * dropProportion;
                 }
             }
         }
-
 
         public override List<object> GetDisplayGeometries()
         {
@@ -164,7 +166,6 @@ namespace ABS.RoboticBuilderABS
                 (object) this.Position,
                 (object) this.LastPosition,
                 (object) new Line(Position, LastPosition),
-                (object) this.Trajectory
             };
         }
 

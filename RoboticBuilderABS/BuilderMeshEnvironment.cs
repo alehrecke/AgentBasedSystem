@@ -26,42 +26,51 @@ namespace ABS.RoboticBuilderABS
         public HashSet<int> ResourceLocations = new HashSet<int>();
         public HashSet<int> ChargingLocations = new HashSet<int>();
         public HashSet<int> ConstructedFaces = new HashSet<int>();
+        public HashSet<int> OccupiedFaces = new HashSet<int>();
         public double[] ResourcePheromones;
-        public double[] BuildLocationPheromones;
-        public double[] ChargingLocationPheromones;
+        public double[] DeliveryPheromones;
+        public double[] ChargingPheromones;
+        private double fadeRate = 0.01;
+        public int lastUpdated = 0;
 
+        public BuilderMeshEnvironment()
+        {
+
+        }
         public BuilderMeshEnvironment(Mesh mesh)
         {
             this.Mesh = mesh;
-            DetermineBaseFaces(40);
+            DetermineBaseFaces(100);
             DetermineResourceLocations();
             DetermineChargingLocations();
             ResourcePheromones = new double[Mesh.Faces.Count];
-            BuildLocationPheromones = new double[Mesh.Faces.Count];
-            ChargingLocationPheromones = new double[Mesh.Faces.Count];
+            DeliveryPheromones = new double[Mesh.Faces.Count];
+            ChargingPheromones = new double[Mesh.Faces.Count];
         }
 
         public void Reset()
         {
             ConstructedFaces.Clear();
-            DetermineBaseFaces(40);
+            DetermineBaseFaces(60);
             DetermineResourceLocations();
             DetermineChargingLocations();
             ResourcePheromones = new double[Mesh.Faces.Count];
-            BuildLocationPheromones = new double[Mesh.Faces.Count];
-            ChargingLocationPheromones = new double[Mesh.Faces.Count];
+            DeliveryPheromones = new double[Mesh.Faces.Count];
+            ChargingPheromones = new double[Mesh.Faces.Count];
         }
         
         
         public void DetermineChargingLocations()
         {
-            ChargingLocations.Add(ConstructedFaces.ElementAt(20));
+            ChargingLocations.Add(ConstructedFaces.ElementAt(45));
             
 
         }
         public void DetermineResourceLocations()
         {
+            
             ResourceLocations.Add(ConstructedFaces.ElementAt(0));
+
 
         }
         public void FadePheromonesArrays()
@@ -69,17 +78,17 @@ namespace ABS.RoboticBuilderABS
             for (int i = 0; i < this.ResourcePheromones.Length; i++)
             {
                 if (this.ResourcePheromones[i] > 0)
-                    this.ResourcePheromones[i]--; 
+                    this.ResourcePheromones[i] -= fadeRate; 
             }
-            for (int i = 0; i < this.BuildLocationPheromones.Length; i++)
+            for (int i = 0; i < this.DeliveryPheromones.Length; i++)
             {
-                if (this.BuildLocationPheromones[i] > 0)
-                    this.BuildLocationPheromones[i]--;
+                if (this.DeliveryPheromones[i] > 0)
+                    this.DeliveryPheromones[i] -= fadeRate;
             }
-            for (int i = 0; i < this.ChargingLocationPheromones.Length; i++)
+            for (int i = 0; i < this.ChargingPheromones.Length; i++)
             {
-                if (this.ChargingLocationPheromones[i] > 0)
-                    this.ChargingLocationPheromones[i]--;
+                if (this.ChargingPheromones[i] > 0)
+                    this.ChargingPheromones[i] -= fadeRate;
             }
 
         }
@@ -136,7 +145,7 @@ namespace ABS.RoboticBuilderABS
             return returnList;
         }
 
-        private List<object> GetMeshEdges()
+        public List<object> GetMeshEdges()
         {
             List<object> meshEdges = new List<object>();
             foreach(MeshFace mF in Mesh.Faces)
@@ -154,7 +163,7 @@ namespace ABS.RoboticBuilderABS
             return meshEdges;
         }
 
-        private List<object> GetResourceLocations()
+        public List<object> GetResourceLocations()
         {
             List<object> resourceFaces = new List<object>();
             foreach (int x in ResourceLocations)
@@ -165,7 +174,7 @@ namespace ABS.RoboticBuilderABS
             return resourceFaces;
         }
 
-        private List<object> GetConstructedFaces(List<object> meshEdges)
+        public List<object> GetConstructedFaces(List<object> meshEdges)
         {
             List<object> constructedFaces = new List<object>();
             foreach (int x in ConstructedFaces)
